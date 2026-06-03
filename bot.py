@@ -139,9 +139,10 @@ app = (
 app.add_handler(
     ChatMemberHandler(
         member_join,
-        ChatMemberHandler.CHAT_MEMBER,
+        ChatMemberHandler.CHAT_MEMBER | ChatMemberHandler.MY_CHAT_MEMBER,
     )
 )
+
 
 app.add_handler(
     CommandHandler(
