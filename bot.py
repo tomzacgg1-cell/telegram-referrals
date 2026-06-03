@@ -24,28 +24,47 @@ def supabase_headers():
 
 
 async def member_join(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    invite = update.chat_member.invite_link
+    print("JOIN EVENT RECEIVED", flush=True)
 
-    if not invite:
-        return
+    try:
+        invite = update.chat_member.invite_link
 
-    user = update.chat_member.new_chat_member.user
+        if not invite:
+            print("NO INVITE LINK FOUND", flush=True)
+            return
 
-    payload = {
-        "telegram_user_id": user.id,
-        "username": user.username,
-        "invite_link_name": invite.name,
-    }
+        print(f"Invite name: {invite.name}", flush=True)
+        print(f"Invite link: {invite.invite_link}", flush=True)
 
-    response = requests.post(
-        f"{SUPABASE_URL}/rest/v1/referrals",
-        headers=supabase_headers(),
-        json=payload,
-        timeout=10,
-    )
+        user = update.chat_member.new_chat_member.user
 
-    print("Supabase insert:", response.status_code, response.text)
-    print(f"{user.username} joined via {invite.name}")
+        print(
+            f"User joined: {user.id} @{user.username}",
+            flush=True
+        )
+
+        payload = {
+            "telegram_user_id": user.id,
+            "username": user.username,
+            "invite_link_name": invite.name,
+        }
+
+        response = requests.post(
+            f"{SUPABASE_URL}/rest/v1/referrals",
+            headers=supabase_headers(),
+            json=payload,
+            timeout=10,
+        )
+
+        print(
+            "Supabase insert:",
+            response.status_code,
+            response.text,
+            flush=True,
+        )
+
+    except Exception as e:
+        print("ERROR:", str(e), flush=True)
 
 
 async def stats(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -62,10 +81,9 @@ async def stats(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
 
     data = response.json()
-    count = len(data)
 
     await update.message.reply_text(
-        f"You have {count} referrals"
+        f"You have {len(data)} referrals"
     )
 
 
@@ -89,23 +107,34 @@ async def leaderboard(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     sorted_counts = sorted(
         counts.items(),
-        key=lambda item: item[1],
+        key=lambda x: x[1],
         reverse=True,
     )
 
     if not sorted_counts:
-        await update.message.reply_text("No referrals yet.")
+        await update.message.reply_text(
+            "No referrals yet."
+        )
         return
 
-    message = "Leaderboard:\n\n"
+    message = "🏆 Leaderboard\n\n"
 
-    for index, (name, count) in enumerate(sorted_counts, start=1):
-        message += f"{index}. {name} - {count}\n"
+    for i, (name, count) in enumerate(
+        sorted_counts,
+        start=1,
+    ):
+        message += f"{i}. {name} - {count}\n"
 
     await update.message.reply_text(message)
 
 
-app = Application.builder().token(BOT_TOKEN).build()
+print("BOT STARTING...", flush=True)
+
+app = (
+    Application.builder()
+    .token(BOT_TOKEN)
+    .build()
+)
 
 app.add_handler(
     ChatMemberHandler(
@@ -114,7 +143,20 @@ app.add_handler(
     )
 )
 
-app.add_handler(CommandHandler("stats", stats))
-app.add_handler(CommandHandler("leaderboard", leaderboard))
+app.add_handler(
+    CommandHandler(
+        "stats",
+        stats,
+    )
+)
+
+app.add_handler(
+    CommandHandler(
+        "leaderboard",
+        leaderboard,
+    )
+)
+
+print("BOT RUNNING...", flush=True)
 
 app.run_polling()
