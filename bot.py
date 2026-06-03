@@ -9,9 +9,9 @@ from telegram.ext import (
 from supabase import create_client
 import os
 
-BOT_TOKEN = os.getenv("BOT_TOKEN")
-SUPABASE_URL = os.getenv("SUPABASE_URL")
-SUPABASE_KEY = os.getenv("SUPABASE_KEY")
+BOT_TOKEN = os.getenv("8542864465:AAEsBZeO6x-qKxLYtXqByu39yvQW4Tz4wYs")
+SUPABASE_URL = os.getenv("https://rokbwezgfmtglpexlrfb.supabase.co/rest/v1/referrals")
+SUPABASE_KEY = os.getenv("sb_secret_lTXJfPqbrmOyTmJqsyQkQA_9FHdwD3O")
 
 supabase = create_client(
     SUPABASE_URL,
